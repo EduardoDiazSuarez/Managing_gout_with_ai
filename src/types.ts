@@ -72,3 +72,11 @@ export interface SleepLog {
   restType?: 'Night Sleep' | 'Daytime Joint Rest Only';
 }
 
+export interface SymptomLog {
+  id: string;
+  date: string; // YYYY-MM-DD
+  symptom: string; // e.g., 'Toe pain', 'Swelling'
+  severity: number; // 1-10
+  notes?: string;
+} 
+
