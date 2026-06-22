@@ -218,13 +218,6 @@ export const STATIC_FOODS_DATABASE: FoodItem[] = [
     category: "Grains",
     why: "Contains moderate plant purines but also rich fiber which slows digestion and helps regulate glucose and metabolic parameters. (PubMed)"
   },
-  {
-    name: "Organic Sesame Seeds",
-    p_rating: "Moderate",
-    mgPer100g: "60-70mg",
-    category: "Other",
-    why: "Sesame seeds contain moderate plant purines (60-70 mg/100g) and are rich in sesamin, a lignan with antioxidant properties that may help reduce joint inflammation. Use in moderation as a garnish or small serving (1-2 tbsp). (PubMed, 2024)"
-  },
 
   // ==========================================
   // LOW PURINE - SAFE (20 Items)
@@ -263,6 +256,13 @@ export const STATIC_FOODS_DATABASE: FoodItem[] = [
     mgPer100g: "Under 15mg",
     category: "Vegetables",
     why: "Sweet potatoes are highly nutritious, low-purine complex carbohydrates packed with Vitamin C, potassium, and beta-carotene. Vitamin C is a natural uricosuric that assists kidneys in clearing excess uric acid. (Mayo Clinic)"
+  },
+  {
+    name: "Organic Sesame Seeds",
+    p_rating: "Safe",
+    mgPer100g: "60-70mg",
+    category: "Other",
+    why: "Sesame seeds are low-purine and contain sesamin, a bioactive lignan shown to lower oxidative stress and dampen joint inflammation. They are also packed with magnesium, which supports muscle relaxation. (PubMed, 2024)"
   },
   {
     name: "Skim Milk",
