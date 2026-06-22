@@ -29,6 +29,9 @@ import StretchDollIcon from './components/StretchDollIcon';
 import Symptoms from './components/Symptoms';
 import FootPainIcon from './components/FootPainIcon';
 import HighCuisine from './components/HighCuisine';
+import LowPurineDetails from './components/LowPurineDetails';
+import ModeratePurineDetails from './components/ModeratePurineDetails';
+import HighPurineDetails from './components/HighPurineDetails';
 
 // Types
 import { FlareLog, HydrationLog, UricAcidLog, NaturalFood, ExerciseLog, SleepLog, SymptomLog } from './types';
@@ -558,6 +561,9 @@ export default function App() {
     { id: 'rest', label: 'Monitoring Rest', icon: Moon, badge: activeFlareExists ? 'Active' : undefined, textCol: activeFlareExists ? 'text-rose-600 font-bold' : '' },
     { id: 'exercise', label: 'Exercise & Mobility', icon: StretchDollIcon },
     { id: 'natural-foods', label: 'Natural Lowering Foods', icon: Leaf },
+    { id: 'low-purine', label: 'Low-Purine (Safe)', icon: Leaf },
+    { id: 'moderate-purine', label: 'Moderate-Purine', icon: Sparkles },
+    { id: 'high-purine', label: 'High-Purine (Avoid)', icon: Flame },
     { id: 'cooking-best-practices', label: 'Cooking Best Practices', icon: Sparkles },
     { id: 'uric-acid', label: 'Monitor in Real Time with Smart Watch', icon: Watch },
     // Symptoms placed at the bottom of the sidebar
@@ -697,7 +703,10 @@ export default function App() {
             )}
 
             {activeTab === 'scanner' && (
-              <FoodScanner />
+              <FoodScanner
+                naturalFoods={naturalFoods}
+                onAddNaturalFood={handleAddNaturalFood}
+              />
             )}
 
             {activeTab === 'hydration' && (
@@ -740,6 +749,18 @@ export default function App() {
 
             {activeTab === 'cooking-best-practices' && (
               <HighCuisine />
+            )}
+
+            {activeTab === 'low-purine' && (
+              <LowPurineDetails />
+            )}
+
+            {activeTab === 'moderate-purine' && (
+              <ModeratePurineDetails />
+            )}
+
+            {activeTab === 'high-purine' && (
+              <HighPurineDetails />
             )}
 
             {activeTab === 'symptoms' && (
