@@ -13,7 +13,8 @@ import {
   Wind,
   Plus,
   Moon,
-  Watch
+  Watch,
+  BookOpen
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
