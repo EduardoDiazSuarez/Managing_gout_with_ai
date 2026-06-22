@@ -4,7 +4,7 @@ export default function HighPurineDetails() {
   const cautions = [
     'Definition: High-purine foods (>150 mg/100g) or foods that metabolically raise uric acid (e.g., high-fructose beverages).',
     'Clinical role: Typically avoid during active flares and limit during maintenance phases; these items most commonly trigger acute attacks.',
-    'Common high-risk items: organ meats, small oily fish (anchovies, sardines), certain shellfish, beer, and concentrated yeast extracts.',
+    'Common high-risk categories include organ meats, small oily fish, certain shellfish, beer, and concentrated yeast extracts.',
   ];
 
   return (
