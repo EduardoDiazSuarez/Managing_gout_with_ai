@@ -29,15 +29,9 @@ import { motion } from 'motion/react';
 import { STATIC_FOODS_DATABASE } from '../data/foods';
 import { FoodItem, AIAnalysisResult, NaturalFood } from '../types';
 
-// Helper to match combined rating selections
+// Helper to match rating selections — exact match only
 const matchesRating = (food: FoodItem, sel: string | null) => {
   if (!sel) return false;
-  if (sel === 'Low-Medium' || sel === 'Safe-Moderate') {
-    return food.p_rating === 'Safe' || food.p_rating === 'Moderate';
-  }
-  if (sel === 'Medium-High' || sel === 'Moderate-High') {
-    return food.p_rating === 'Moderate' || food.p_rating === 'High';
-  }
   return food.p_rating === sel;
 };
 
@@ -493,28 +487,6 @@ export default function FoodScanner({ naturalFoods = [], onAddNaturalFood }: Foo
               </div>
             )}
 
-            {selectedDetailRating === 'Low-Medium' && (
-              <div className="bg-gradient-to-r from-emerald-600/10 to-amber-200/5 border border-emerald-500/10 rounded-2xl p-5 mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  <h2 className="font-sans font-bold text-lg text-emerald-800">Low–Medium Purine Foods</h2>
-                </div>
-                <p className="text-xs text-emerald-705 leading-relaxed">
-                  Covers both safe low-purine staples and moderate items that are reasonable in controlled portions. Ideal for transition meal planning and cautious variety.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4 text-[11px] text-emerald-850">
-                  <div className="bg-white/80 border border-emerald-100/55 p-2.5 rounded-xl">
-                    <strong>🟢 &amp; 🟠 Balanced:</strong> Pair moderate items with low-purine sides and hydration to reduce flare risk.
-                  </div>
-                  <div className="bg-white/80 border border-emerald-100/55 p-2.5 rounded-xl">
-                    <strong>🍒 Favor Antioxidants:</strong> Add cherries, lemon, or high vitamin-C sides to meals.
-                  </div>
-                  <div className="bg-white/80 border border-emerald-100/55 p-2.5 rounded-xl">
-                    <strong>🧾 Portion Control:</strong> Keep servings to smaller sizes when including animal protein.
-                  </div>
-                </div>
-              </div>
-            )}
 
             {selectedDetailRating === 'Moderate' && (
               <div className="bg-gradient-to-r from-amber-600/10 to-orange-500/5 border border-amber-500/10 rounded-2xl p-5 mb-6">
@@ -539,28 +511,6 @@ export default function FoodScanner({ naturalFoods = [], onAddNaturalFood }: Foo
               </div>
             )}
 
-            {selectedDetailRating === 'Medium-High' && (
-              <div className="bg-gradient-to-r from-amber-600/10 to-rose-200/5 border border-amber-500/10 rounded-2xl p-5 mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                  <h2 className="font-sans font-bold text-lg text-amber-800">Medium–High Purine Foods</h2>
-                </div>
-                <p className="text-xs text-amber-705 leading-relaxed">
-                  These are items that can quickly push serum urate upward in susceptible people. Limit frequency and avoid during active flares.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4 text-[11px] text-amber-850">
-                  <div className="bg-white/80 border border-amber-100/55 p-2.5 rounded-xl">
-                    <strong>⚠️ Caution:</strong> Prefer substitutions or halve portion sizes when including these items.
-                  </div>
-                  <div className="bg-white/80 border border-amber-100/55 p-2.5 rounded-xl">
-                    <strong>🚫 Avoid with Alcohol:</strong> Drinking alcohol alongside these increases risk.
-                  </div>
-                  <div className="bg-white/80 border border-amber-100/55 p-2.5 rounded-xl">
-                    <strong>💧 Hydration:</strong> Extra fluids are mandatory if consuming these occasionally.
-                  </div>
-                </div>
-              </div>
-            )}
 
             {selectedDetailRating === 'High' && (
               <div className="bg-gradient-to-r from-rose-600/10 to-red-500/5 border border-rose-500/10 rounded-2xl p-5 mb-6">
@@ -873,25 +823,6 @@ export default function FoodScanner({ naturalFoods = [], onAddNaturalFood }: Foo
                     </span>
                   </button>
 
-                  {/* Low-Medium Card */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedDetailRating('Low-Medium')}
-                    className="bg-emerald-100/30 hover:bg-emerald-100/60 border border-emerald-150 hover:border-emerald-355 p-4 rounded-2xl text-left cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs group flex flex-col justify-between"
-                  >
-                    <div>
-                      <span className="font-bold text-emerald-700 flex items-center gap-1.5 text-xs">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        Low - Medium
-                      </span>
-                      <p className="text-slate-600 mt-1.5 text-[11px] leading-relaxed">
-                        Mix of low and moderate purine items — generally safe when portion-controlled and hydrated.
-                      </p>
-                    </div>
-                    <span className="text-[10px] text-emerald-600 font-bold mt-3.5 inline-flex items-center gap-1 group-hover:underline">
-                      View List ({STATIC_FOODS_DATABASE.filter(f => f.p_rating === 'Safe' || f.p_rating === 'Moderate').length} foods) <ArrowRight size={10} />
-                    </span>
-                  </button>
 
                   {/* Moderate Card */}
                   <button
@@ -913,25 +844,6 @@ export default function FoodScanner({ naturalFoods = [], onAddNaturalFood }: Foo
                     </span>
                   </button>
 
-                  {/* Medium-High Card */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedDetailRating('Medium-High')}
-                    className="bg-amber-100/30 hover:bg-amber-100/60 border border-amber-150 hover:border-amber-355 p-4 rounded-2xl text-left cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs group flex flex-col justify-between"
-                  >
-                    <div>
-                      <span className="font-bold text-amber-700 flex items-center gap-1.5 text-xs">
-                        <span className="w-2 h-2 rounded-full bg-amber-500" />
-                        Medium - High
-                      </span>
-                      <p className="text-slate-600 mt-1.5 text-[11px] leading-relaxed">
-                        Borderline items: treat cautiously and prefer substitutions or smaller portions.
-                      </p>
-                    </div>
-                    <span className="text-[10px] text-amber-600 font-bold mt-3.5 inline-flex items-center gap-1 group-hover:underline">
-                      View List ({STATIC_FOODS_DATABASE.filter(f => f.p_rating === 'Moderate' || f.p_rating === 'High').length} foods) <ArrowRight size={10} />
-                    </span>
-                  </button>
 
                   {/* High Card */}
                   <button
