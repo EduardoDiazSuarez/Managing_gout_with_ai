@@ -13,9 +13,7 @@ import {
   Wind,
   Plus,
   Moon,
-  Accessibility,
-  Watch,
-  MessageSquare
+  Watch
 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -28,10 +26,15 @@ import SmartwatchMonitor from './components/SmartwatchMonitor';
 import FoodScanner from './components/FoodScanner';
 import ExerciseTracker from './components/ExerciseTracker';
 import StretchDollIcon from './components/StretchDollIcon';
-import AICoachChat from './components/AICoachChat';
+import Symptoms from './components/Symptoms';
+import FootPainIcon from './components/FootPainIcon';
+import HighCuisine from './components/HighCuisine';
+import LowPurineDetails from './components/LowPurineDetails';
+import ModeratePurineDetails from './components/ModeratePurineDetails';
+import HighPurineDetails from './components/HighPurineDetails';
 
 // Types
-import { FlareLog, HydrationLog, UricAcidLog, NaturalFood, ExerciseLog, SleepLog } from './types';
+import { FlareLog, HydrationLog, UricAcidLog, NaturalFood, ExerciseLog, SleepLog, SymptomLog } from './types';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -47,6 +50,7 @@ export default function App() {
   const [naturalFoods, setNaturalFoods] = useState<NaturalFood[]>([]);
   const [exerciseLogs, setExerciseLogs] = useState<ExerciseLog[]>([]);
   const [sleepLogs, setSleepLogs] = useState<SleepLog[]>([]);
+  const [symptoms, setSymptoms] = useState<SymptomLog[]>([]);
 
   // State variables for notifications/import errors
   const [alertMsg, setAlertMsg] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -56,24 +60,26 @@ export default function App() {
     // 1. Flares
     const localFlares = localStorage.getItem('gout_flares');
     if (localFlares) {
-      setFlareLogs(JSON.parse(localFlares));
+      try {
+        const parsed: FlareLog[] = JSON.parse(localFlares);
+        // Remove any seeded sample flares so default audited attacks reflect user's data
+        const userFlares = parsed.filter((f) => !(f && typeof (f as any).id === 'string' && (f as any).id.startsWith('seed-flare-')));
+        // If only seed data existed, persist the cleaned empty array
+        if (userFlares.length !== parsed.length) {
+          localStorage.setItem('gout_flares', JSON.stringify(userFlares));
+        }
+        setFlareLogs(userFlares);
+      } catch (e) {
+        // Malformed storage: reset to empty
+        const initialFlares: FlareLog[] = [];
+        setFlareLogs(initialFlares);
+        localStorage.setItem('gout_flares', JSON.stringify(initialFlares));
+      }
     } else {
-      // Seed initial sample resolved flare info for beautiful historical overview
-      const sampleFlares: FlareLog[] = [
-        {
-          id: 'seed-flare-1',
-          startDate: '2026-05-10',
-          endDate: '2026-05-16',
-          joint: 'Left Big Toe (Podagra)',
-          painLevel: 8,
-          triggers: ['Beer or Alcohol', 'Seafood or Shellfish'],
-          remediesTaken: ['Montmorency Tart Cherry Extract', 'Bromelain Pineapple Enzyme'],
-          notes: 'Started severe throbbing at 2 AM. Big toe joint red-fever hot and double normal size.',
-          status: 'resolved',
-        },
-      ];
-      setFlareLogs(sampleFlares);
-      localStorage.setItem('gout_flares', JSON.stringify(sampleFlares));
+      // Default to zero audited attacks until the user logs any flares
+      const initialFlares: FlareLog[] = [];
+      setFlareLogs(initialFlares);
+      localStorage.setItem('gout_flares', JSON.stringify(initialFlares));
     }
 
     // 2. Natural Lowering Foods Watchlist
@@ -251,20 +257,52 @@ export default function App() {
       localStorage.setItem('gout_sleep', JSON.stringify(sampleSleep));
     }
 
+    // 6. Symptom logs (user-reported symptoms like pain, swelling)
+    const localSymptoms = localStorage.getItem('gout_symptoms');
+    if (localSymptoms) {
+      try {
+        setSymptoms(JSON.parse(localSymptoms));
+      } catch (e) {
+        setSymptoms([]);
+        localStorage.setItem('gout_symptoms', JSON.stringify([]));
+      }
+    } else {
+      setSymptoms([]);
+      localStorage.setItem('gout_symptoms', JSON.stringify([]));
+    }
+
     // 6. Hydration with daily reset check
     const localHydration = localStorage.getItem('gout_hydration');
     const todayStr = new Date().toISOString().split('T')[0];
 
+    // If body weight is stored, compute minimum target (30 ml/kg) but keep 2500ml default
+    let weightTarget: number | null = null;
+    try {
+      const bw = localStorage.getItem('gout_body_weight');
+      if (bw) {
+        const kg = Number(bw);
+        if (!isNaN(kg) && kg > 0) {
+          weightTarget = Math.max(2500, Math.round(kg * 30));
+        }
+      }
+    } catch (e) {
+      weightTarget = null;
+    }
+
     if (localHydration) {
       const parsedHydration: HydrationLog = JSON.parse(localHydration);
+      const baseTarget = parsedHydration.target || 2500;
+      const finalTarget = weightTarget ?? baseTarget;
       if (parsedHydration.date === todayStr) {
-        setHydration(parsedHydration);
+        setHydration({ ...parsedHydration, target: finalTarget });
+        // persist updated target if changed
+        localStorage.setItem('gout_hydration', JSON.stringify({ ...parsedHydration, target: finalTarget }));
       } else {
-        // Different day! Reset amount to zero but keep custom target if present
+        // Different day! Reset amount to zero but use computed or existing target
         const resetHydration: HydrationLog = {
           date: todayStr,
           amount: 0,
-          target: parsedHydration.target || 2500,
+          target: finalTarget,
         };
         setHydration(resetHydration);
         localStorage.setItem('gout_hydration', JSON.stringify(resetHydration));
@@ -273,7 +311,7 @@ export default function App() {
       const defaultHydration: HydrationLog = {
         date: todayStr,
         amount: 0,
-        target: 2500,
+        target: weightTarget ?? 2500,
       };
       setHydration(defaultHydration);
       localStorage.setItem('gout_hydration', JSON.stringify(defaultHydration));
@@ -363,6 +401,11 @@ export default function App() {
     localStorage.setItem('gout_sleep', JSON.stringify(newSleeps));
   };
 
+  const saveSymptoms = (newSymptoms: SymptomLog[]) => {
+    setSymptoms(newSymptoms);
+    localStorage.setItem('gout_symptoms', JSON.stringify(newSymptoms));
+  };
+
   const handleAddFlareLog = (logData: Omit<FlareLog, 'id' | 'status'>) => {
     const newFlare: FlareLog = {
       ...logData,
@@ -423,6 +466,23 @@ export default function App() {
     triggerAlert('Sleep log deleted.', 'info');
   };
 
+  // Symptoms handlers
+  const handleAddSymptom = (log: Omit<SymptomLog, 'id'>) => {
+    const newLog: SymptomLog = {
+      ...log,
+      id: 'sym-' + Date.now(),
+    };
+    const updated = [newLog, ...symptoms];
+    saveSymptoms(updated);
+    triggerAlert('Symptom recorded.', 'success');
+  };
+
+  const handleDeleteSymptom = (id: string) => {
+    const updated = symptoms.filter((s) => s.id !== id);
+    saveSymptoms(updated);
+    triggerAlert('Symptom entry deleted.', 'info');
+  };
+
   const handleAddUALog = (logData: Omit<UricAcidLog, 'id'>) => {
     const newUA: UricAcidLog = {
       ...logData,
@@ -444,6 +504,7 @@ export default function App() {
       naturalFoods,
       uricAcidLogs,
       hydration,
+      symptoms,
       version: '1.0.0',
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
@@ -491,119 +552,22 @@ export default function App() {
   };
 
   const activeFlareExists = flareLogs.some((f) => f.status === 'active');
-  const activeFlareJoint = flareLogs.find((f) => f.status === 'active')?.joint;
-
-  const handleSkillExecution = (name: string, args: any) => {
-    try {
-      switch (name) {
-        case 'logWaterIntake': {
-          const { amount } = args;
-          if (typeof amount === 'number') {
-            handleUpdateWater(amount);
-            return `Logged +${amount}mL water intake to your daily database.`;
-          }
-          break;
-        }
-        case 'logUricAcid': {
-          const { value, notes } = args;
-          if (typeof value === 'number') {
-            handleAddUALog({
-              date: new Date().toISOString().split('T')[0],
-              value,
-              notes: notes || 'Logged via AI Coach Chat',
-            });
-            return `Successfully logged clinical Uric Acid measurement: ${value} mg/dL.`;
-          }
-          break;
-        }
-        case 'logFlareUp': {
-          const { joint, painLevel, triggers, remediesTaken, notes } = args;
-          if (joint && typeof painLevel === 'number') {
-            handleAddFlareLog({
-              startDate: new Date().toISOString().split('T')[0],
-              joint,
-              painLevel,
-              triggers: triggers || [],
-              remediesTaken: remediesTaken || [],
-              notes: notes || 'Symptom reported via AI Voice Assistant',
-            });
-            return `Logged Gout Flare in ${joint} at Pain Level ${painLevel}/10. Please consult professional clinical care recommendations under Gout Rest and Recovery.`;
-          }
-          break;
-        }
-        case 'resolveActiveFlare': {
-          const activeFlare = flareLogs.find((f) => f.status === 'active');
-          if (activeFlare) {
-            handleResolveFlareLog(activeFlare.id);
-            return `Marked Gout Flare inside ${activeFlare.joint} as resolved. Progression status updated to healthy.`;
-          } else {
-            return `No active gout flares currently registered to resolve.`;
-          }
-        }
-        case 'logExercise': {
-          const { activityType, duration, jointStrain, remissionPhase, notes } = args;
-          if (activityType && typeof duration === 'number' && typeof jointStrain === 'number') {
-            handleAddExercise({
-              date: new Date().toISOString().split('T')[0],
-              activityType,
-              duration,
-              jointStrain,
-              remissionPhase: remissionPhase ?? !activeFlareExists,
-              notes: notes || 'Logged via AI Voice Coach',
-            });
-            return `Logged ${duration} mins of ${activityType} activity with joint strain rating of ${jointStrain}/10.`;
-          }
-          break;
-        }
-        case 'logSleep': {
-          const { hours, quality, restlessJoints, meditationCompleted } = args;
-          if (typeof hours === 'number' && quality) {
-            handleAddSleep({
-              date: new Date().toISOString().split('T')[0],
-              hours,
-              quality,
-              restlessJoints: restlessJoints || false,
-              meditationCompleted: meditationCompleted || false,
-            });
-            return `Logged sleep quality record: ${hours} hours of ${quality} sleep rest.`;
-          }
-          break;
-        }
-        case 'addWatchlistFood': {
-          const { name, servingSize, frequency, mechanism, category, notes } = args;
-          if (name && servingSize && frequency && category) {
-            handleAddNaturalFood({
-              name,
-              servingSize,
-              frequency,
-              mechanism: mechanism || 'Supports general renal excretion and systemic safety',
-              category,
-              notes: notes || 'Added via AI Dietician recommendations',
-            });
-            return `Successfully added ${name} directly to your Natural Food and Probiotic watchlist.`;
-          }
-          break;
-        }
-        default:
-          console.warn('Unknown skill call:', name);
-      }
-    } catch (e: any) {
-      console.error('Skill callback execution failed:', e);
-      return `Skill execution failed: ${e.message}`;
-    }
-    return null;
-  };
 
   // Menu Tabs definitions
   const TABS = [
     { id: 'dashboard', label: 'Overview Dashboard', icon: Activity },
-    { id: 'ai-assistant', label: 'AI Voice Coach (Chat)', icon: MessageSquare, badge: 'Voice' },
     { id: 'scanner', label: 'Diet (AI Food Scanner)', icon: Sparkles },
     { id: 'hydration', label: 'Hydration (Water tracker)', icon: Droplet },
     { id: 'rest', label: 'Monitoring Rest', icon: Moon, badge: activeFlareExists ? 'Active' : undefined, textCol: activeFlareExists ? 'text-rose-600 font-bold' : '' },
     { id: 'exercise', label: 'Exercise & Mobility', icon: StretchDollIcon },
     { id: 'natural-foods', label: 'Natural Lowering Foods', icon: Leaf },
+    { id: 'low-purine', label: 'Low-Purine (Safe)', icon: Leaf },
+    { id: 'moderate-purine', label: 'Moderate-Purine', icon: Sparkles },
+    { id: 'high-purine', label: 'High-Purine (Avoid)', icon: Flame },
+    { id: 'cooking-best-practices', label: 'Cooking Best Practices', icon: Sparkles },
     { id: 'uric-acid', label: 'Monitor in Real Time with Smart Watch', icon: Watch },
+    // Symptoms placed at the bottom of the sidebar
+    { id: 'symptoms', label: 'Symptoms', icon: FootPainIcon },
   ];
 
   return (
@@ -727,14 +691,6 @@ export default function App() {
               />
             )}
 
-            {activeTab === 'ai-assistant' && (
-              <AICoachChat
-                onExecuteSkill={handleSkillExecution}
-                activeFlareExists={activeFlareExists}
-                activeFlareJoint={activeFlareJoint}
-              />
-            )}
-
             {activeTab === 'rest' && (
               <RestAndRecovery
                 flareLogs={flareLogs}
@@ -747,7 +703,10 @@ export default function App() {
             )}
 
             {activeTab === 'scanner' && (
-              <FoodScanner />
+              <FoodScanner
+                naturalFoods={naturalFoods}
+                onAddNaturalFood={handleAddNaturalFood}
+              />
             )}
 
             {activeTab === 'hydration' && (
@@ -755,6 +714,11 @@ export default function App() {
                 log={hydration}
                 onUpdateWater={handleUpdateWater}
                 onResetWater={handleResetWater}
+                onSetTarget={(newTarget: number) => {
+                  const updated = { ...hydration, target: newTarget };
+                  saveHydration(updated);
+                  triggerAlert(`Hydration target updated to ${newTarget} ml`, 'success');
+                }}
               />
             )}
 
@@ -782,6 +746,30 @@ export default function App() {
                 onDeleteNaturalFood={handleDeleteNaturalFood}
               />
             )}
+
+            {activeTab === 'cooking-best-practices' && (
+              <HighCuisine />
+            )}
+
+            {activeTab === 'low-purine' && (
+              <LowPurineDetails />
+            )}
+
+            {activeTab === 'moderate-purine' && (
+              <ModeratePurineDetails />
+            )}
+
+            {activeTab === 'high-purine' && (
+              <HighPurineDetails />
+            )}
+
+            {activeTab === 'symptoms' && (
+              <Symptoms
+                symptoms={symptoms}
+                onAddSymptom={handleAddSymptom}
+                onDeleteSymptom={handleDeleteSymptom}
+              />
+            )}
           </motion.div>
         </main>
 
@@ -795,7 +783,7 @@ export default function App() {
             This application and its components (including the AI Food Analyst, Probiotic Strain Auditor, hydration and exercise trackers) are intended for educational and supportive care tracking only. The content and metrics (including purine indexes) are built upon peer-reviewed studies *(PubMed, Healthline Medically Reviewed)* and cannot replace professional medical diagnosis, rheumatology consults, or prescribed pharmacotherapies (such as Allopurinol or Colchicine). Always seek the advice of your physician before making clinical, dietary, or supplement adjustments.
           </div>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <span>&copy; 2026 Gout Companion. Registered medical care journal.</span>
+            <span>&copy; 2026 Gout Companion.</span>
             <div className="flex items-center gap-1 text-slate-300">
               <span>To customize food queries: Add</span>
               <code className="bg-slate-50 text-slate-600 px-1.5 py-0.5 rounded-md text-[10px] uppercase font-bold border border-slate-200/50">GEMINI_API_KEY</code>

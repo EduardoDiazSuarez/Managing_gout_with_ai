@@ -20,11 +20,26 @@ import {
   ArrowRight, 
   CornerDownRight,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  ArrowLeft,
+  ArrowUpDown,
+  Info
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { STATIC_FOODS_DATABASE } from '../data/foods';
-import { FoodItem, AIAnalysisResult } from '../types';
+import { FoodItem, AIAnalysisResult, NaturalFood } from '../types';
+
+// Helper to match combined rating selections
+const matchesRating = (food: FoodItem, sel: string | null) => {
+  if (!sel) return false;
+  if (sel === 'Low-Medium' || sel === 'Safe-Moderate') {
+    return food.p_rating === 'Safe' || food.p_rating === 'Moderate';
+  }
+  if (sel === 'Medium-High' || sel === 'Moderate-High') {
+    return food.p_rating === 'Moderate' || food.p_rating === 'High';
+  }
+  return food.p_rating === sel;
+};
 
 // Predefined database of common retail food barcodes for demo and validation
 const BARCODE_DATABASE = [
@@ -202,13 +217,24 @@ const playSuccessChime = () => {
   }
 };
 
-export default function FoodScanner() {
+interface FoodScannerProps {
+  naturalFoods?: NaturalFood[];
+  onAddNaturalFood?: (food: Omit<NaturalFood, 'id' | 'takenDates'>) => void;
+}
+
+export default function FoodScanner({ naturalFoods = [], onAddNaturalFood }: FoodScannerProps) {
   const [activeConsoleTab, setActiveConsoleTab] = useState<'search' | 'ai' | 'barcode'>('search');
 
   // Search static list card
   const [searchQuery, setSearchQuery] = useState('');
   const [aiQuery, setAiQuery] = useState('');
   
+  // Category detail page state
+  const [selectedDetailRating, setSelectedDetailRating] = useState<string | null>(null);
+  const [detailSearchQuery, setDetailSearchQuery] = useState('');
+  const [selectedDetailCategory, setSelectedDetailCategory] = useState<string>('All');
+  const [detailSortBy, setDetailSortBy] = useState<'name' | 'mg' | 'category'>('name');
+
   // AI analysis state
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<AIAnalysisResult | null>(null);
@@ -410,97 +436,518 @@ export default function FoodScanner() {
         </button>
       </div>
 
-      {/* VIEW 1: MANUAL DIRECTORY SEARCH */}
+      {/* VIEW 1: MANUAL DIRECTORY SEARCH OR RATING DETAIL PAGE */}
       {activeConsoleTab === 'search' && (
-        <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm animate-in fade-in duration-200">
-          <div className="mb-4">
-            <h2 className="font-sans font-semibold text-lg text-slate-800 flex items-center gap-2">
-              <Search className="text-blue-500" size={20} />
-              Instant Purine Directory
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Search common food categories to investigate purine content and risk weight
-            </p>
-          </div>
+        selectedDetailRating ? (
+          // RATING LEVEL DETAIL PAGE
+          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm animate-in fade-in duration-200" id="purine_detail_page">
+            {/* Header / Back Navigation */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+              <button
+                onClick={() => {
+                  setSelectedDetailRating(null);
+                  setDetailSearchQuery('');
+                  setSelectedDetailCategory('All');
+                }}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors select-none cursor-pointer self-start bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-xl border border-slate-200"
+                id="btn_back_to_purine_index"
+              >
+                <ArrowLeft size={14} /> Back to Directory
+              </button>
 
-          <div className="relative mb-4">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input
-              type="text"
-              placeholder="Search cherries, beef liver, salmon, water, coffee..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition font-medium text-slate-700"
-              id="food_search_input"
-            />
-          </div>
-
-          {searchQuery && (
-            <div className="max-h-72 overflow-y-auto divide-y divide-slate-50 pr-1 space-y-2 mt-2">
-              {filteredFoods.length === 0 ? (
-                <div className="text-center py-6">
-                  <p className="text-xs text-slate-500">No matching items in offline database.</p>
-                  <button
-                    onClick={() => {
-                      setAiQuery(searchQuery);
-                      setActiveConsoleTab('ai');
-                      setSearchQuery('');
-                    }}
-                    className="mt-2 inline-flex items-center gap-1.5 text-xs text-blue-600 font-semibold hover:underline cursor-pointer"
-                  >
-                    <Sparkles size={14} /> Analyze &ldquo;{searchQuery}&rdquo; with Gemini AI instead
-                  </button>
-                </div>
-              ) : (
-                filteredFoods.map((food) => {
-                  const styles = getRatingStyle(food.p_rating);
-                  return (
-                    <div key={food.name} className="py-3 flex flex-col sm:flex-row justify-between items-start gap-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="font-semibold text-sm text-slate-800">{food.name}</span>
-                          <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">
-                            {food.category}
-                          </span>
-                          {food.mgPer100g && (
-                            <span className="text-[10px] text-slate-400 font-mono">
-                              ({food.mgPer100g} / 100g)
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-slate-500 mt-1">{food.why}</p>
-                      </div>
-
-                      <div className={`px-3 py-1 rounded-full text-xs font-bold border ${styles.bg} self-start shrink-0`}>
-                        Purine: {food.p_rating}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+              <span className="text-[10px] text-slate-400 font-mono font-bold uppercase tracking-wider">
+                Evidence-Based Diet Guide
+              </span>
             </div>
-          )}
 
-          {!searchQuery && (
-            <div className="mt-4">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Key Dietary Rules overview</span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-emerald-50/20 border border-emerald-100/50 p-3 rounded-2xl text-xs">
-                  <span className="font-bold text-emerald-800 flex items-center gap-1">🟢 Safe (Low)</span>
-                  <p className="text-slate-600 mt-1 text-[11px]">Cherries, water, eggs, brown rice, low-fat dairy. Helps lower systemic acid levels.</p>
+            {/* Dynamic Category Content Headers */}
+            {selectedDetailRating === 'Safe' && (
+              <div className="bg-gradient-to-r from-emerald-600/10 to-teal-500/5 border border-emerald-500/10 rounded-2xl p-5 mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <h2 className="font-sans font-bold text-lg text-emerald-800">Safe / Low Purine Foods</h2>
                 </div>
-                <div className="bg-amber-50/20 border border-amber-100/50 p-3 rounded-2xl text-xs">
-                  <span className="font-bold text-amber-800 flex items-center gap-1">🟡 Moderate</span>
-                  <p className="text-slate-600 mt-1 text-[11px]">Chicken, oatmeal, spinach, salmon. Safe in small, controlled portions.</p>
+                <p className="text-xs text-emerald-705 leading-relaxed">
+                  These foods are clinically documented to support renal clearance, raise urine pH, or naturally inhibit uric acid synthesis. They are safe to consume daily and help maintain therapeutic uric acid targets under 6.0 mg/dL *(Mayo Clinic, Healthline Medically Reviewed)*.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4 text-[11px] text-emerald-850">
+                  <div className="bg-white/80 border border-emerald-100/55 p-2.5 rounded-xl">
+                    <strong>💧 Dilutive Flushing:</strong> 8-12 glasses of water keeps urate dissolved *(Cleveland Clinic)*.
+                  </div>
+                  <div className="bg-white/80 border border-emerald-100/55 p-2.5 rounded-xl">
+                    <strong>🍒 Natural XO Inhibitors:</strong> Anthocyanins in cherries block liver purine breakdown *(PubMed)*.
+                  </div>
+                  <div className="bg-white/80 border border-emerald-100/55 p-2.5 rounded-xl">
+                    <strong>🥛 Renal Excretion:</strong> Casein in low-fat dairy actively promotes renal clearance *(Healthline)*.
+                  </div>
                 </div>
-                <div className="bg-rose-50/20 border border-rose-100/50 p-3 rounded-2xl text-xs">
-                  <span className="font-bold text-rose-800 flex items-center gap-1">🔴 High (Avoid)</span>
-                  <p className="text-slate-600 mt-1 text-[11px]">Beer, liquor, shrimp, organ meats, high-fructose corn sodas. Can trigger flares.</p>
+              </div>
+            )}
+
+            {selectedDetailRating === 'Low-Medium' && (
+              <div className="bg-gradient-to-r from-emerald-600/10 to-amber-200/5 border border-emerald-500/10 rounded-2xl p-5 mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                  <h2 className="font-sans font-bold text-lg text-emerald-800">Low–Medium Purine Foods</h2>
+                </div>
+                <p className="text-xs text-emerald-705 leading-relaxed">
+                  Covers both safe low-purine staples and moderate items that are reasonable in controlled portions. Ideal for transition meal planning and cautious variety.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4 text-[11px] text-emerald-850">
+                  <div className="bg-white/80 border border-emerald-100/55 p-2.5 rounded-xl">
+                    <strong>🟢 &amp; 🟠 Balanced:</strong> Pair moderate items with low-purine sides and hydration to reduce flare risk.
+                  </div>
+                  <div className="bg-white/80 border border-emerald-100/55 p-2.5 rounded-xl">
+                    <strong>🍒 Favor Antioxidants:</strong> Add cherries, lemon, or high vitamin-C sides to meals.
+                  </div>
+                  <div className="bg-white/80 border border-emerald-100/55 p-2.5 rounded-xl">
+                    <strong>🧾 Portion Control:</strong> Keep servings to smaller sizes when including animal protein.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedDetailRating === 'Moderate' && (
+              <div className="bg-gradient-to-r from-amber-600/10 to-orange-500/5 border border-amber-500/10 rounded-2xl p-5 mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  <h2 className="font-sans font-bold text-lg text-amber-800">Moderate Purine Foods</h2>
+                </div>
+                <p className="text-xs text-amber-705 leading-relaxed">
+                  Contains moderate levels of purines (50-150mg/100g). Red meats and poultry are safe in disciplined, limited portion sizes (typically under 100g). Crucially, plant-derived purines (spinach, oatmeal, legumes, mushrooms) do not show clinical correlation to gout flares and are generally safe *(PubMed, The New England Journal of Medicine)*.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4 text-[11px] text-amber-850">
+                  <div className="bg-white/80 border border-amber-100/55 p-2.5 rounded-xl">
+                    <strong>🥩 Meat Control:</strong> Keep red meat and chicken servings below 100g.
+                  </div>
+                  <div className="bg-white/80 border border-amber-100/55 p-2.5 rounded-xl">
+                    <strong>🌱 Plant Purines:</strong> Veggies like spinach are healthy and do not raise flare risk.
+                  </div>
+                  <div className="bg-white/80 border border-amber-100/55 p-2.5 rounded-xl">
+                    <strong>💧 Hydrate Companion:</strong> Drink extra water when consuming moderate animal purines.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedDetailRating === 'Medium-High' && (
+              <div className="bg-gradient-to-r from-amber-600/10 to-rose-200/5 border border-amber-500/10 rounded-2xl p-5 mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  <h2 className="font-sans font-bold text-lg text-amber-800">Medium–High Purine Foods</h2>
+                </div>
+                <p className="text-xs text-amber-705 leading-relaxed">
+                  These are items that can quickly push serum urate upward in susceptible people. Limit frequency and avoid during active flares.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4 text-[11px] text-amber-850">
+                  <div className="bg-white/80 border border-amber-100/55 p-2.5 rounded-xl">
+                    <strong>⚠️ Caution:</strong> Prefer substitutions or halve portion sizes when including these items.
+                  </div>
+                  <div className="bg-white/80 border border-amber-100/55 p-2.5 rounded-xl">
+                    <strong>🚫 Avoid with Alcohol:</strong> Drinking alcohol alongside these increases risk.
+                  </div>
+                  <div className="bg-white/80 border border-amber-100/55 p-2.5 rounded-xl">
+                    <strong>💧 Hydration:</strong> Extra fluids are mandatory if consuming these occasionally.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {selectedDetailRating === 'High' && (
+              <div className="bg-gradient-to-r from-rose-600/10 to-red-500/5 border border-rose-500/10 rounded-2xl p-5 mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+                  <h2 className="font-sans font-bold text-lg text-rose-800">High Purine Foods (Strict Avoidance)</h2>
+                </div>
+                <p className="text-xs text-rose-705 leading-relaxed">
+                  These foods carry extreme purine density (150-600mg+/100g) or metabolic side-effects (alcohol, high fructose) that rapidly trigger hyperuricemia. Avoid strictly during active pain flares and limit stringently during maintenance *(Mayo Clinic, PubMed)*.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4 text-[11px] text-rose-850">
+                  <div className="bg-white/80 border border-rose-100/55 p-2.5 rounded-xl">
+                    <strong>🍺 Beer & Spirits:</strong> Yeast purines and alcohol block renal excretion. Avoid completely.
+                  </div>
+                  <div className="bg-white/80 border border-rose-100/55 p-2.5 rounded-xl">
+                    <strong>🥩 Organ Meats:</strong> Dense organ DNA/RNA breaks down immediately into joint crystals.
+                  </div>
+                  <div className="bg-white/80 border border-rose-100/55 p-2.5 rounded-xl">
+                    <strong>🥤 Fructose (HFCS):</strong> Fructose triggers rapid cellular ATP depletion, raising uric acid.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Filters Bar: Search and Category Selection */}
+            <div className="space-y-4 mb-6">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <input
+                  type="text"
+                  placeholder={`Search in ${selectedDetailRating} purine items...`}
+                  value={detailSearchQuery}
+                  onChange={(e) => setDetailSearchQuery(e.target.value)}
+                  className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition font-medium text-slate-700"
+                />
+              </div>
+
+              {/* Category selector pills */}
+              <div className="flex flex-wrap gap-1.5 items-center">
+                <span className="text-[10px] uppercase font-bold text-slate-400 mr-1.5">Filter Category:</span>
+                {['All', 'Seafood', 'Meats', 'Beverages', 'Vegetables', 'Dairy', 'Grains', 'Fruits', 'Other'].map((cat) => {
+                  // Check if there are items in this category for the current rating
+                  const count = STATIC_FOODS_DATABASE.filter(f => matchesRating(f, selectedDetailRating) && (cat === 'All' || f.category === cat)).length;
+                  if (count === 0 && cat !== 'All') return null;
+
+                  const isSelected = selectedDetailCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedDetailCategory(cat)}
+                      className={`text-[10px] px-3 py-1.5 rounded-xl border font-bold transition select-none cursor-pointer ${
+                        isSelected
+                          ? 'bg-slate-800 border-slate-800 text-white shadow-xs'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      {cat} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Sorting Bar */}
+              <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                <span>
+                  Showing {STATIC_FOODS_DATABASE.filter(f => matchesRating(f, selectedDetailRating) && (selectedDetailCategory === 'All' || f.category === selectedDetailCategory) && f.name.toLowerCase().includes(detailSearchQuery.toLowerCase())).length} items
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="flex items-center gap-0.5">
+                    <ArrowUpDown size={10} /> Sort By:
+                  </span>
+                  <select
+                    value={detailSortBy}
+                    onChange={(e) => setDetailSortBy(e.target.value as any)}
+                    className="bg-transparent border-0 font-bold text-slate-600 focus:outline-hidden focus:ring-0 p-0 cursor-pointer text-[11px]"
+                  >
+                    <option value="name">Alphabetical</option>
+                    <option value="mg">Purine Level (mg)</option>
+                    <option value="category">Category</option>
+                  </select>
                 </div>
               </div>
             </div>
-          )}
-        </div>
+
+            {/* FOOD CARDS LIST */}
+            <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+              {(() => {
+                let list = STATIC_FOODS_DATABASE.filter(f => matchesRating(f, selectedDetailRating));
+                
+                if (selectedDetailCategory !== 'All') {
+                  list = list.filter(f => f.category === selectedDetailCategory);
+                }
+
+                if (detailSearchQuery.trim()) {
+                  list = list.filter(f => 
+                    f.name.toLowerCase().includes(detailSearchQuery.toLowerCase()) || 
+                    f.why.toLowerCase().includes(detailSearchQuery.toLowerCase())
+                  );
+                }
+
+                // Sort
+                list = [...list].sort((a, b) => {
+                  if (detailSortBy === 'name') {
+                    return a.name.localeCompare(b.name);
+                  }
+                  if (detailSortBy === 'category') {
+                    return a.category.localeCompare(b.category);
+                  }
+                  if (detailSortBy === 'mg') {
+                    const getVal = (item: FoodItem) => {
+                      const str = item.mgPer100g || '';
+                      if (str.includes('Under')) return 5;
+                      if (str.includes('N/A') || str === '') return 0;
+                      const matches = str.match(/\d+/g);
+                      if (matches && matches.length > 0) {
+                        return Math.max(...matches.map(Number));
+                      }
+                      return 0;
+                    };
+                    return getVal(b) - getVal(a); // High to low
+                  }
+                  return 0;
+                });
+
+                if (list.length === 0) {
+                  return (
+                    <div className="text-center py-10 text-slate-400">
+                      No matching foods found in this level. Try a different search query or category filter.
+                    </div>
+                  );
+                }
+
+                return list.map((food) => {
+                  const isSafe = food.p_rating === 'Safe';
+                  const isTracked = isSafe && naturalFoods.some(nf => nf.name.toLowerCase() === food.name.toLowerCase());
+                  
+                  return (
+                    <div
+                      key={food.name}
+                      className="p-4 rounded-2xl border transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-50/30 hover:bg-slate-50/80 border-slate-100 hover:border-slate-200"
+                    >
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-bold text-slate-800 text-sm">{food.name}</h4>
+                          <span className="text-[9px] font-bold font-mono px-2 py-0.5 bg-white border border-slate-200 text-slate-500 rounded-md">
+                            {food.category}
+                          </span>
+                          {food.mgPer100g && (
+                            <span className="text-[10px] text-slate-400 font-mono font-bold bg-white/70 px-1.5 py-0.5 border border-slate-250/70 rounded-md">
+                              {food.mgPer100g} / 100g
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500 leading-relaxed font-sans">{food.why}</p>
+                      </div>
+
+                      {/* Right Hand Actions */}
+                      <div className="shrink-0 self-end md:self-center">
+                        {isSafe ? (
+                          onAddNaturalFood && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (isTracked) return;
+                                
+                                const mapCategory = (cat: string): 'Fruit' | 'Vegetable' | 'Beverage' | 'Dairy' | 'Herbal/Seasoning' | 'Other' => {
+                                  if (cat === 'Beverages') return 'Beverage';
+                                  if (cat === 'Vegetables') return 'Vegetable';
+                                  if (cat === 'Fruits') return 'Fruit';
+                                  if (cat === 'Dairy') return 'Dairy';
+                                  return 'Other';
+                                };
+
+                                onAddNaturalFood({
+                                  name: food.name,
+                                  servingSize: food.name === 'Water' ? '250ml (1 glass)' : '1 portion (approx 100g)',
+                                  category: mapCategory(food.category),
+                                  frequency: 'Daily',
+                                  mechanism: food.why,
+                                  notes: 'Added from Safe Purine Foods detail page.'
+                                });
+                              }}
+                              disabled={isTracked}
+                              className={`text-[10px] font-bold px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer ${
+                                isTracked
+                                  ? 'bg-slate-100 border border-slate-200 text-slate-450 pointer-events-none'
+                                  : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:shadow-sm'
+                              }`}
+                            >
+                              <Check size={11} className={isTracked ? 'stroke-[2.5px]' : ''} />
+                              {isTracked ? 'Watchlisted' : 'Track Intake'}
+                            </button>
+                          )
+                        ) : food.p_rating === 'High' ? (
+                          <span className="text-[10px] font-bold px-2.5 py-1.5 bg-rose-50 border border-rose-100 text-rose-700 rounded-xl flex items-center gap-1">
+                            <AlertTriangle size={11} className="text-rose-500" /> High Flare Risk
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold px-2.5 py-1.5 bg-amber-50 border border-amber-100 text-amber-700 rounded-xl flex items-center gap-1">
+                            <Info size={11} className="text-amber-500" /> Portion Control
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+            
+            {/* Disclaimer in Detail Page */}
+            <div className="bg-slate-50 border border-slate-200/60 p-4 rounded-2xl flex items-start gap-2.5 mt-5">
+              <Info className="text-slate-400 shrink-0 mt-0.5" size={14} />
+              <div className="text-[10px] text-slate-550 leading-normal font-sans">
+                ⚖️ <strong>Dietary Support Disclaimer:</strong> Portions and clinical mechanisms are derived from public clinical resources. Nutritional tracking is supportive and cannot replace doctor-prescribed gout therapies (e.g. Allopurinol).
+              </div>
+            </div>
+          </div>
+        ) : (
+          // MAIN PURINE DIRECTORY VIEW
+          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm animate-in fade-in duration-200">
+            <div className="mb-4">
+              <h2 className="font-sans font-semibold text-lg text-slate-800 flex items-center gap-2">
+                <Search className="text-blue-500" size={20} />
+                Instant Purine Directory
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Search common food categories to investigate purine content and risk weight
+              </p>
+            </div>
+
+            <div className="relative mb-4">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                type="text"
+                placeholder="Search cherries, beef liver, salmon, water, coffee..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition font-medium text-slate-700"
+                id="food_search_input"
+              />
+            </div>
+
+            {searchQuery && (
+              <div className="max-h-72 overflow-y-auto divide-y divide-slate-50 pr-1 space-y-2 mt-2">
+                {filteredFoods.length === 0 ? (
+                  <div className="text-center py-6">
+                    <p className="text-xs text-slate-500">No matching items in offline database.</p>
+                    <button
+                      onClick={() => {
+                        setAiQuery(searchQuery);
+                        setActiveConsoleTab('ai');
+                        setSearchQuery('');
+                      }}
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs text-blue-600 font-semibold hover:underline cursor-pointer"
+                    >
+                      <Sparkles size={14} /> Analyze &ldquo;{searchQuery}&rdquo; with Gemini AI instead
+                    </button>
+                  </div>
+                ) : (
+                  filteredFoods.map((food) => {
+                    const styles = getRatingStyle(food.p_rating);
+                    return (
+                      <div key={food.name} className="py-3 flex flex-col sm:flex-row justify-between items-start gap-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-sm text-slate-800">{food.name}</span>
+                            <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">
+                              {food.category}
+                            </span>
+                            {food.mgPer100g && (
+                              <span className="text-[10px] text-slate-400 font-mono">
+                                ({food.mgPer100g} / 100g)
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1">{food.why}</p>
+                        </div>
+
+                        <div className={`px-3 py-1 rounded-full text-xs font-bold border ${styles.bg} self-start shrink-0`}>
+                          Purine: {food.p_rating}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
+            {!searchQuery && (
+              <div className="mt-4">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2.5">Key Dietary Levels (Click to view detailed lists)</span>
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+                  {/* Safe (Low) Card */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDetailRating('Safe')}
+                    className="bg-emerald-50/30 hover:bg-emerald-50/60 border border-emerald-150 hover:border-emerald-355 p-4 rounded-2xl text-left cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs group flex flex-col justify-between"
+                  >
+                    <div>
+                      <span className="font-bold text-emerald-850 flex items-center gap-1.5 text-xs">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        Safe (Low)
+                      </span>
+                      <p className="text-slate-600 mt-1.5 text-[11px] leading-relaxed">
+                        Cherries, water, eggs, brown rice, low-fat dairy. Encouraged daily to support kidney clearing mechanisms.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-emerald-600 font-bold mt-3.5 inline-flex items-center gap-1 group-hover:underline">
+                      View List ({STATIC_FOODS_DATABASE.filter(f => f.p_rating === 'Safe').length} foods) <ArrowRight size={10} />
+                    </span>
+                  </button>
+
+                  {/* Low-Medium Card */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDetailRating('Low-Medium')}
+                    className="bg-emerald-100/30 hover:bg-emerald-100/60 border border-emerald-150 hover:border-emerald-355 p-4 rounded-2xl text-left cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs group flex flex-col justify-between"
+                  >
+                    <div>
+                      <span className="font-bold text-emerald-700 flex items-center gap-1.5 text-xs">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        Low - Medium
+                      </span>
+                      <p className="text-slate-600 mt-1.5 text-[11px] leading-relaxed">
+                        Mix of low and moderate purine items — generally safe when portion-controlled and hydrated.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-emerald-600 font-bold mt-3.5 inline-flex items-center gap-1 group-hover:underline">
+                      View List ({STATIC_FOODS_DATABASE.filter(f => f.p_rating === 'Safe' || f.p_rating === 'Moderate').length} foods) <ArrowRight size={10} />
+                    </span>
+                  </button>
+
+                  {/* Moderate Card */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDetailRating('Moderate')}
+                    className="bg-amber-50/30 hover:bg-amber-50/60 border border-amber-150 hover:border-amber-355 p-4 rounded-2xl text-left cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs group flex flex-col justify-between"
+                  >
+                    <div>
+                      <span className="font-bold text-amber-850 flex items-center gap-1.5 text-xs">
+                        <span className="w-2 h-2 rounded-full bg-amber-500" />
+                        Moderate
+                      </span>
+                      <p className="text-slate-600 mt-1.5 text-[11px] leading-relaxed">
+                        Chicken, oatmeal, spinach, salmon, legumes. Consume in controlled portion sizes (&lt;100g) with ample water.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-amber-600 font-bold mt-3.5 inline-flex items-center gap-1 group-hover:underline">
+                      View List ({STATIC_FOODS_DATABASE.filter(f => f.p_rating === 'Moderate').length} foods) <ArrowRight size={10} />
+                    </span>
+                  </button>
+
+                  {/* Medium-High Card */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDetailRating('Medium-High')}
+                    className="bg-amber-100/30 hover:bg-amber-100/60 border border-amber-150 hover:border-amber-355 p-4 rounded-2xl text-left cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs group flex flex-col justify-between"
+                  >
+                    <div>
+                      <span className="font-bold text-amber-700 flex items-center gap-1.5 text-xs">
+                        <span className="w-2 h-2 rounded-full bg-amber-500" />
+                        Medium - High
+                      </span>
+                      <p className="text-slate-600 mt-1.5 text-[11px] leading-relaxed">
+                        Borderline items: treat cautiously and prefer substitutions or smaller portions.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-amber-600 font-bold mt-3.5 inline-flex items-center gap-1 group-hover:underline">
+                      View List ({STATIC_FOODS_DATABASE.filter(f => f.p_rating === 'Moderate' || f.p_rating === 'High').length} foods) <ArrowRight size={10} />
+                    </span>
+                  </button>
+
+                  {/* High Card */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedDetailRating('High')}
+                    className="bg-rose-50/30 hover:bg-rose-50/60 border border-rose-150 hover:border-rose-355 p-4 rounded-2xl text-left cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xs group flex flex-col justify-between"
+                  >
+                    <div>
+                      <span className="font-bold text-rose-850 flex items-center gap-1.5 text-xs">
+                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                        High (Avoid)
+                      </span>
+                      <p className="text-slate-600 mt-1.5 text-[11px] leading-relaxed">
+                        Beer, organ meats, shrimp, sweetbreads, sugary sodas. Can trigger sudden acute flare outbreaks. Avoid strictly.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-rose-600 font-bold mt-3.5 inline-flex items-center gap-1 group-hover:underline">
+                      View List ({STATIC_FOODS_DATABASE.filter(f => f.p_rating === 'High').length} foods) <ArrowRight size={10} />
+                    </span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )
       )}
 
       {/* VIEW 2: AI MEAL GOUT DIET ANALYST */}
