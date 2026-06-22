@@ -14,7 +14,7 @@ export default function HighCuisine() {
   const spicePhGuidance = [
     'Ingredient pH: Citrus, vinegars, tomatoes, tamarind, and fermented condiments are acidic and lower dish pH.',
     'When avoiding acidity: favor fresh herbs (parsley, cilantro, basil) and warm aromatics (ginger, turmeric, cumin) over acidifying spice blends.',
-    'Avoid combining multiple acidifiers in one reduction (e.g., sumac + vinegar + tamarind) — this amplifies acidification and may alter purine chemistry in the glaze.',
+    'Avoid combining multiple acidifiers in one reduction (e.g., sumac + vinegar + tamarind) — this amplifies acidity and can overly concentrate flavors; add acids at plating when possible.',
   ];
 
   const quickChecklist = [

@@ -29,7 +29,7 @@ Key Cooking Best Practices
 7. Portion control and plating
 - Serve smaller portions of high-purine items and pair them with vitamin C–rich vegetables to support uric acid clearance.
 
-7. Documentation
+8. Documentation
 - Document SOPs for stock separation and safe discard; keep recipes annotated for separation requirements.
 
 Caveats
