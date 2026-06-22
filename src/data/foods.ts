@@ -259,10 +259,10 @@ export const STATIC_FOODS_DATABASE: FoodItem[] = [
   },
   {
     name: "Organic Sesame Seeds",
-    p_rating: "Safe",
+    p_rating: "Moderate",
     mgPer100g: "60-70mg",
     category: "Other",
-    why: "Sesame seeds are low-purine and contain sesamin, a bioactive lignan shown to lower oxidative stress and dampen joint inflammation. They are also packed with magnesium, which supports muscle relaxation. (PubMed, 2024)"
+    why: "Contains moderate purines (~60-70mg/100g) but also provides anti-inflammatory lignans (sesamin) and micronutrients. Use in moderation as part of a low-glycemic, balanced diet. (PubMed, Cleveland Clinic)"
   },
   {
     name: "Skim Milk",
