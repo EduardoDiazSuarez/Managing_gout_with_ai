@@ -32,7 +32,7 @@ export default function Dashboard({
     ? [...uricAcidLogs].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0] 
     : null;
 
-  const totalFlaresLogged = Array.isArray(flareLogs) ? flareLogs.length : 0;
+  const totalFlaresLogged = flareLogs.length;
 
   return (
     <div className="space-y-6" id="dashboard_root">
@@ -184,7 +184,7 @@ export default function Dashboard({
           <span className="text-[10px] text-slate-400 font-semibold block">
             {totalFlaresLogged > 0 
               ? `Keep logs up-to-date to identify triggers` 
-              : '0 attacks audited — Clean slate.'}
+              : 'Zero attacks cataloged yet! Clean slate.'}
           </span>
         </div>
 

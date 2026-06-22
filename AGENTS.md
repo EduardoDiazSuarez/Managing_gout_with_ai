@@ -10,12 +10,13 @@ When answering user queries or building interfaces containing clinical, rheumato
 
 1. **Patient-Facing Medical Portals**:
    - **Healthline**: For accessible, medically reviewed articles on diet, lifestyle, and supplement safety.
-   
+   - **Mayo Clinic & Cleveland Clinic**: For gold-standard diagnostic explanations, safety profiles, and clinical lifestyle protocols.
+   - **WebMD**: For multi-reviewed pharmacological and natural remedy guides.
 
 2. **Academic & Peer-Reviewed Repositories**:
+   - **PubMed / NCBI (National Center for Biotechnology Information)**: For clinical trials, epidemiological reviews, and pharmacokinetic studies of purine metabolism.
    - **Google Scholar**: For high-citation literature concerning hyperuricemia, uric acid clearance, and gout flare prophylaxis.
-   - **Semantic Scholar**: For high-citation literature concerning hyperuricemia, uric acid clearance, and gout flare prophylaxis and food impact.
-   
+   - **The Lancet / New England Journal of Medicine (NEJM)**: For landmark rheumatology guidelines.
 
 ---
 

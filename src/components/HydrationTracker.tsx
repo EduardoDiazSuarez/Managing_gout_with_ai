@@ -7,20 +7,10 @@ interface HydrationTrackerProps {
   log: HydrationLog;
   onUpdateWater: (amount: number) => void;
   onResetWater: () => void;
-  onSetTarget: (newTarget: number) => void;
 }
 
-export default function HydrationTracker({ log, onUpdateWater, onResetWater, onSetTarget }: HydrationTrackerProps) {
+export default function HydrationTracker({ log, onUpdateWater, onResetWater }: HydrationTrackerProps) {
   const [customMl, setCustomMl] = useState<string>('');
-  const [lastAdded, setLastAdded] = useState<number | null>(null);
-  const [bodyWeight, setBodyWeight] = useState<string>(() => {
-    try {
-      return localStorage.getItem('gout_body_weight') || '';
-    } catch (e) {
-      return '';
-    }
-  });
-
   const percent = Math.min(100, Math.floor((log.amount / log.target) * 100));
 
   const handleAddCustom = (e: FormEvent) => {
@@ -28,7 +18,6 @@ export default function HydrationTracker({ log, onUpdateWater, onResetWater, onS
     const ml = parseInt(customMl);
     if (!isNaN(ml) && ml > 0) {
       onUpdateWater(ml);
-      setLastAdded(ml);
       setCustomMl('');
     }
   };
@@ -104,13 +93,10 @@ export default function HydrationTracker({ log, onUpdateWater, onResetWater, onS
           <div className="space-y-3">
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Log Presets</h3>
             <div className="grid grid-cols-2 gap-3">
-                          {PRESETS.map((p) => (
+              {PRESETS.map((p) => (
                 <button
                   key={p.value}
-                  onClick={() => {
-                    onUpdateWater(p.value);
-                    setLastAdded(p.value);
-                  }}
+                  onClick={() => onUpdateWater(p.value)}
                   className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-blue-50/20 group text-left cursor-pointer transition"
                   id={`preset_${p.value}`}
                 >
@@ -155,68 +141,6 @@ export default function HydrationTracker({ log, onUpdateWater, onResetWater, onS
               </button>
             </div>
           </form>
-
-          <div className="mt-4 border-t pt-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Body weight & target</h3>
-            <div className="flex items-center gap-2 mb-2">
-              <input
-                type="number"
-                min="30"
-                max="300"
-                value={bodyWeight}
-                onChange={(e) => setBodyWeight(e.target.value)}
-                placeholder="Body weight kg"
-                className="w-44 px-3 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-sm"
-                id="input_body_weight"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  const kg = Number(bodyWeight);
-                  if (!isNaN(kg) && kg > 0) {
-                    const computed = Math.round(kg * 30); // 30 ml per kg
-                    const newTarget = Math.max(2500, computed);
-                    onSetTarget(newTarget);
-                    try { localStorage.setItem('gout_body_weight', String(kg)); } catch(e){}
-                  }
-                }}
-                className="bg-emerald-600 text-white px-3 py-2 rounded-2xl text-sm"
-                id="btn_apply_body_weight"
-              >
-                Apply (30ml/kg)
-              </button>
-              <div className="text-xs text-slate-500 ml-3">Current target: {log.target} ml</div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  if (lastAdded && lastAdded > 0) {
-                    onUpdateWater(-lastAdded);
-                    setLastAdded(null);
-                  }
-                }}
-                disabled={!lastAdded}
-                className={`px-3 py-2 rounded-2xl text-sm ${lastAdded ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
-                id="btn_undo_water"
-              >
-                Undo last (+{lastAdded || 0}ml)
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  // clear stored body weight
-                  setBodyWeight('');
-                  try { localStorage.removeItem('gout_body_weight'); } catch(e){}
-                }}
-                className="text-xs text-slate-500"
-              >
-                Clear weight
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
