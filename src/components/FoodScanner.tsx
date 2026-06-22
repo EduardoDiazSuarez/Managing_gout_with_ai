@@ -30,13 +30,15 @@ import { STATIC_FOODS_DATABASE } from '../data/foods';
 import { FoodItem, AIAnalysisResult, NaturalFood } from '../types';
 
 // Helper to match combined rating selections
+// Note: Make Medium-High exclusive to 'Moderate' to avoid duplicating strict 'High' items across multiple lists.
 const matchesRating = (food: FoodItem, sel: string | null) => {
   if (!sel) return false;
   if (sel === 'Low-Medium' || sel === 'Safe-Moderate') {
     return food.p_rating === 'Safe' || food.p_rating === 'Moderate';
   }
   if (sel === 'Medium-High' || sel === 'Moderate-High') {
-    return food.p_rating === 'Moderate' || food.p_rating === 'High';
+    // Treat 'Medium-High' as primarily showing moderate/borderline items only
+    return food.p_rating === 'Moderate';
   }
   return food.p_rating === sel;
 };
@@ -929,7 +931,7 @@ export default function FoodScanner({ naturalFoods = [], onAddNaturalFood }: Foo
                       </p>
                     </div>
                     <span className="text-[10px] text-amber-600 font-bold mt-3.5 inline-flex items-center gap-1 group-hover:underline">
-                      View List ({STATIC_FOODS_DATABASE.filter(f => f.p_rating === 'Moderate' || f.p_rating === 'High').length} foods) <ArrowRight size={10} />
+                      View List ({STATIC_FOODS_DATABASE.filter(f => f.p_rating === 'Moderate').length} foods) <ArrowRight size={10} />
                     </span>
                   </button>
 
