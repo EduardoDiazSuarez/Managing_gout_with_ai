@@ -23,7 +23,21 @@ export default function Symptoms({ symptoms, onAddSymptom, onDeleteSymptom }: Pr
   return (
     <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs">
       <h3 className="font-semibold text-lg mb-3">Symptoms Journal</h3>
-      <p className="text-xs text-slate-500 mb-4">Record symptom events (pain, swelling, stiffness) to correlate with triggers and treatments.</p>
+      <div className="text-xs text-slate-500 mb-4 space-y-2">
+        <div>
+          Typical symptoms: sudden, intense joint pain (often the big toe), swelling, warmth, redness, and reduced range of motion. Attacks often peak quickly and may last 1–2 weeks if untreated.
+        </div>
+        <div>
+          Common sites: big toe (podagra), ankles, knees, wrists, fingers; long-standing disease can form tophi (hard lumps).
+        </div>
+        <div>
+          Red flags: high fever, worsening pain despite treatment, or systemic illness—seek urgent medical care (possible joint infection).
+        </div>
+        <div>
+          What to record: onset/time, location, severity (1–10), duration, possible triggers (food, alcohol, dehydration, injury), medications taken and response, and photos if helpful.
+        </div>
+        <div className="text-[11px] text-slate-400">Sources: NHS, Healthline.</div>
+      </div>
 
       <form onSubmit={submit} className="flex gap-2 items-center mb-4">
         <input

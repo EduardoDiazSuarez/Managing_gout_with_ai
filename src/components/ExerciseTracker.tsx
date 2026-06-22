@@ -124,6 +124,8 @@ export default function ExerciseTracker({
                   <option value="Cycling">Gentle Spinning / Stationary Cycling</option>
                   <option value="Swimming">Hydro-Therapeutic Swimming (Zero joint compression)</option>
                   <option value="Stretching/Yoga">Gentle Yoga / Range Stretches</option>
+                  <option value="Flexibility">Dedicated Flexibility / Stretching Session</option>
+                  <option value="Calisthenics">Low-Impact Calisthenics (Bodyweight)</option>
                   <option value="Elliptical">Impact-Free Elliptical</option>
                   <option value="Other">Other Non-Impact Exercise</option>
                 </select>
@@ -245,28 +247,52 @@ export default function ExerciseTracker({
       <div className="bg-slate-900 text-white rounded-3xl p-6 border border-slate-800 shadow-sm space-y-4">
         <h3 className="font-sans font-semibold text-sm text-white flex items-center gap-2">
           <Info size={16} className="text-indigo-400" />
-          The Gout Exercise Formula: Low-Impact & Remission Flush
+          Evidence-Based Exercise & Mobility Guidance
         </h3>
+
         <p className="text-xs text-slate-300 leading-relaxed">
-          Uric acid forms microscopic, needle-sharp sodium urate crystals in joints where circulation is coldest and slowest (like your toes/ankles). Overdoing exercise or running on unstable/inflamed joints can damage tissues, while under-exercising lets waste accumulate. Here is the perfect balanced program:
+          Goals: maintain cardiovascular health, reduce weight when needed, restore joint range and functional strength, and avoid actions that worsen acute inflammation or prolong recovery.
         </p>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           <div className="bg-slate-800/60 p-3.5 rounded-2xl border border-slate-700/50">
-            <h4 className="text-xs font-bold text-indigo-300 flex items-center gap-1">
-              🏊‍♂️ Absolute Zero-Compression (Zero Load)
-            </h4>
-            <p className="text-[11px] text-slate-300 mt-1 lines-relaxed">
-              Warm water swimming provides gentle resistance while completely unloading pressure from joint nodes. It optimizes micro-capillary density and natural tissue recovery.
-            </p>
+            <h4 className="text-xs font-bold text-indigo-300 flex items-center gap-1">Recommendations (Remission)</h4>
+            <ul className="text-[11px] text-slate-300 mt-2 list-disc ml-4 space-y-1">
+              <li>Target ≥150 min/week moderate aerobic activity (e.g., brisk walking, cycling, swimming) or 75 min vigorous — break into short sessions.</li>
+              <li>Strength training 2×/week: bodyweight or light resistance; focus on controlled movement and joint-friendly progressions.</li>
+              <li>Flexibility & mobility 3×/week: short dedicated sessions or post-exercise stretching to preserve range (ankle/foot emphasis).</li>
+              <li>Low-impact calisthenics (twice weekly): squats to a chair, assisted lunges, step-ups — keep reps moderate and avoid fatigue.</li>
+              <li>Progress load slowly (10–20% volume increase weekly) and prefer zero-load modes if distal joints are frequently symptomatic.</li>
+            </ul>
           </div>
+
           <div className="bg-slate-800/60 p-3.5 rounded-2xl border border-slate-700/50">
-            <h4 className="text-xs font-bold text-indigo-300 flex items-center gap-1">
-              🔄 Stay Away from High-Frequency Impact
-            </h4>
-            <p className="text-[11px] text-slate-300 mt-1 lines-relaxed">
-              Avoid high-impact running, jump ropes, or heavy plyometric drops. When bones strike hard surfaces repeatedly, existing micro-crystals grinding can accelerate chronic osteitis.
-            </p>
+            <h4 className="text-xs font-bold text-indigo-300 flex items-center gap-1">Safety & Flare rules</h4>
+            <ul className="text-[11px] text-slate-300 mt-2 list-disc ml-4 space-y-1">
+              <li>Active flare: rest the affected joint(s); use non‑weightbearing range-of-motion, breathing, and gentle isometrics only.</li>
+              <li>Never train to exhaustion — avoid sessions causing pronounced fatigue or poor next‑day recovery; fatigue may worsen systemic inflammation.</li>
+              <li>Avoid high-impact, torsional, or heavy-load movements while joints are unstable or inflamed.</li>
+              <li>Warm up, cool down, hydrate, wear supportive footwear, and stop if pain, swelling, fever, or systemic symptoms develop.</li>
+              <li>Seek physiotherapy or rheumatology review when chronic mobility loss, frequent flares, or persistent pain occur.</li>
+            </ul>
           </div>
+        </div>
+
+        <div className="pt-3 text-[11px] text-slate-300">
+          Practical 1‑week sample (beginner, low-impact)
+          <ul className="list-disc ml-4 mt-1 space-y-1 text-[11px]">
+            <li>Mon: 25–30 min brisk walk + 10 min ankle/foot mobility.</li>
+            <li>Tue: Flexibility session 20 min (gentle yoga/stretching).</li>
+            <li>Wed: 20–30 min cycling or pool walking; light calisthenics (2 sets × 8–10 reps) focusing on form.</li>
+            <li>Thu: Rest or 15 min easy mobility & breathing.</li>
+            <li>Fri: 30 min brisk walk + strength (bodyweight) 2×10 controlled reps.</li>
+            <li>Sat: Flexibility 20 min; balance drills 10 min.</li>
+            <li>Sun: Rest or gentle 20 min swim; monitor fatigue and joint response.</li>
+          </ul>
+        </div>
+
+        <div className="pt-3 text-[10px] text-slate-400">
+          Evidence: weight loss RCTs reduce gout burden; WHO physical activity targets apply; ACR/NHS guidance supports joint protection during flares. Sources: WHO, ACR 2020, NHS, MedlinePlus, Arthritis Rheumatol 2024, Semantic Scholar searches.
         </div>
       </div>
 
