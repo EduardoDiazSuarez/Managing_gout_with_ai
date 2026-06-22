@@ -32,7 +32,7 @@ export default function HighPurineDetails() {
 
       <section className="mb-4">
         <h4 className="font-semibold mb-2">Cooking & substitution strategies</h4>
-        <p className="text-[13px] text-slate-600">When preparing meals, discard concentrated poaching liquids and avoid long reductions that concentrate purines. Substitute with eggs, tofu, low‑fat dairy, or plant proteins. If craving seafood, pick lower‑purine white fish and limit portion to <75 g and avoid oily small fish.</p>
+        <p className="text-[13px] text-slate-600">When preparing meals, discard concentrated poaching liquids and avoid long reductions that concentrate purines. Substitute with eggs, tofu, low‑fat dairy, or plant proteins. If craving seafood, pick lower‑purine white fish and limit portion to &lt;75 g and avoid oily small fish.</p>
       </section>
 
       <section>
