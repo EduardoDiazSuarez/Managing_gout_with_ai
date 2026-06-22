@@ -627,7 +627,7 @@ export default function App() {
   // Menu Tabs definitions
   const TABS = [
     { id: 'dashboard', label: 'Overview Dashboard', icon: Activity },
-    { id: 'ai-coach', label: 'AI Coach (Guru Gouty)', icon: BookOpen },
+    { id: 'ai-coach', label: 'Gemi Coach', icon: BookOpen },
     { id: 'scanner', label: 'Diet (AI Food Scanner)', icon: Sparkles },
     { id: 'hydration', label: 'Hydration (Water tracker)', icon: Droplet },
     { id: 'rest', label: 'Monitoring Rest', icon: Moon, badge: activeFlareExists ? 'Active' : undefined, textCol: activeFlareExists ? 'text-rose-600 font-bold' : '' },

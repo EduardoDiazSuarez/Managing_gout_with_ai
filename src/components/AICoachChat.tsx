@@ -87,7 +87,7 @@ export default function AICoachChat({
       {
         id: 'welcome',
         role: 'model',
-        text: `Hello! I am **Guru Gouty**, your Gout Companion and AI Care Coach. 🔬
+        text: `Hello! I am **Gemi Coach**, your Gout Companion and AI Care Coach. 🔬
 
 I can digest medical papers *(PubMed)* and cross-reference clinical guidelines *(Mayo Clinic)* to support you. You can chat with me or use the **microphone** to speak.
 
@@ -237,7 +237,7 @@ How can I assist your biological joint care journey today?`,
           </div>
           <div>
             <h2 className="font-bold text-slate-900 text-sm flex items-center gap-1.5 leading-tight">
-              Guru Gouty
+              Gemi Coach
               <span className="bg-indigo-150 text-indigo-700 text-[9px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full border border-indigo-200">
                 ACTIVE AI COACH
               </span>
@@ -330,7 +330,7 @@ How can I assist your biological joint care journey today?`,
             <div className="bg-white text-slate-800 border border-slate-150 rounded-2xl p-4 shadow-sm flex items-center gap-3">
               <Loader className="text-indigo-600 animate-spin" size={16} />
               <div className="space-y-0.5">
-                <p className="text-xs font-bold text-slate-700">Guru Gouty is analyzing metabolics...</p>
+                <p className="text-xs font-bold text-slate-700">Gemi Coach is analyzing metabolics...</p>
                 <p className="text-[10px] text-slate-400">Cross-referencing PubMed clearance studies</p>
               </div>
             </div>
@@ -376,7 +376,7 @@ How can I assist your biological joint care journey today?`,
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder={isListening ? "Listening carefully... speak now" : "Instruct Guru Gouty to log or ask diet questions..."}
+            placeholder={isListening ? "Listening carefully... speak now" : "Instruct Gemi Coach to log or ask diet questions..."}
             className="flex-1 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white text-xs font-semibold rounded-xl px-4 h-11 outline-none transition"
             id="chat_text_input"
           />
@@ -400,7 +400,7 @@ How can I assist your biological joint care journey today?`,
 
         {/* Scientific disclaimer badge */}
         <p className="text-[9px] text-slate-400 mt-3 text-center leading-relaxed">
-          Guru Gouty parses peer-reviewed studies *(PubMed, PubMed 2024)* to log guidelines, not replacement values for direct rheumatologist consulting.
+          Gemi Coach parses peer-reviewed studies *(PubMed, PubMed 2024)* to log guidelines, not replacement values for direct rheumatologist consulting.
         </p>
       </div>
 
