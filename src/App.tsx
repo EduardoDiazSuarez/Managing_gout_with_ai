@@ -32,6 +32,7 @@ import HighCuisine from './components/HighCuisine';
 import LowPurineDetails from './components/LowPurineDetails';
 import ModeratePurineDetails from './components/ModeratePurineDetails';
 import HighPurineDetails from './components/HighPurineDetails';
+import AICoachChat from './components/AICoachChat';
 
 // Types
 import { FlareLog, HydrationLog, UricAcidLog, NaturalFood, ExerciseLog, SleepLog, SymptomLog } from './types';
@@ -497,6 +498,74 @@ export default function App() {
     }
   };
 
+  // AI coach skill executor: called by AICoachChat when Gemini suggests tool calls
+  const handleExecuteSkill = (name: string, args: any): string | null => {
+    // Return a human-friendly confirmation message when action was performed, or null if none
+    try {
+      switch (name) {
+        case 'log-water':
+          // args.amount expected in ml
+          if (typeof args?.amount === 'number') {
+            handleUpdateWater(args.amount);
+            return `Logged ${args.amount}ml water.`;
+          }
+          return null;
+        case 'add-natural-food':
+          if (args?.name) {
+            handleAddNaturalFood({
+              name: args.name,
+              servingSize: args.servingSize || '1 portion',
+              frequency: args.frequency || 'Daily',
+              category: args.category || 'Other',
+              mechanism: args.mechanism,
+              notes: args.notes,
+            });
+            return `Added ${args.name} to your natural foods watchlist.`;
+          }
+          return null;
+        case 'log-ua':
+          if (typeof args?.value === 'number') {
+            handleAddUALog({ date: args.date || new Date().toISOString().split('T')[0], value: args.value, notes: args.notes });
+            return `Recorded uric acid ${args.value} mg/dL`;
+          }
+          return null;
+        case 'add-flare':
+          if (args?.joint) {
+            handleAddFlareLog({ startDate: args.startDate || new Date().toISOString().split('T')[0], joint: args.joint, painLevel: args.painLevel || 5, triggers: args.triggers || [], remediesTaken: args.remediesTaken || [], notes: args.notes });
+            return `Logged active flare at ${args.joint}`;
+          }
+          return null;
+        case 'resolve-flare':
+          if (args?.id) {
+            handleResolveFlareLog(args.id);
+            return `Resolved flare ${args.id}`;
+          }
+          if (activeFlare) {
+            handleResolveFlareLog(activeFlare.id);
+            return `Resolved active flare at ${activeFlare.joint}`;
+          }
+          return null;
+        case 'add-exercise':
+          if (args?.activityType) {
+            handleAddExercise({ date: args.date || new Date().toISOString().split('T')[0], activityType: args.activityType, duration: args.duration || 30, jointStrain: args.jointStrain || 1, remissionPhase: !!args.remissionPhase, notes: args.notes });
+            return `Logged exercise: ${args.activityType}`;
+          }
+          return null;
+        case 'add-sleep':
+          if (typeof args?.hours === 'number') {
+            handleAddSleep({ date: args.date || new Date().toISOString().split('T')[0], hours: args.hours, quality: args.quality || 'Good', restlessJoints: !!args.restlessJoints, meditationCompleted: !!args.meditationCompleted });
+            return `Logged sleep: ${args.hours} hours`;
+          }
+          return null;
+        default:
+          return null;
+      }
+    } catch (e) {
+      console.error('Skill execution error', e);
+      return null;
+    }
+  };
+
   // Import / Export backup helpers
   const handleExportBackup = () => {
     const backupData = {
@@ -552,10 +621,12 @@ export default function App() {
   };
 
   const activeFlareExists = flareLogs.some((f) => f.status === 'active');
+  const activeFlare = flareLogs.find((f) => f.status === 'active') || null;
 
   // Menu Tabs definitions
   const TABS = [
     { id: 'dashboard', label: 'Overview Dashboard', icon: Activity },
+    { id: 'ai-coach', label: 'AI Coach (Guru Gouty)', icon: BookOpen },
     { id: 'scanner', label: 'Diet (AI Food Scanner)', icon: Sparkles },
     { id: 'hydration', label: 'Hydration (Water tracker)', icon: Droplet },
     { id: 'rest', label: 'Monitoring Rest', icon: Moon, badge: activeFlareExists ? 'Active' : undefined, textCol: activeFlareExists ? 'text-rose-600 font-bold' : '' },
@@ -744,6 +815,14 @@ export default function App() {
                 onAddNaturalFood={handleAddNaturalFood}
                 onToggleFoodTaken={handleToggleFoodTaken}
                 onDeleteNaturalFood={handleDeleteNaturalFood}
+              />
+            )}
+
+            {activeTab === 'ai-coach' && (
+              <AICoachChat
+                onExecuteSkill={handleExecuteSkill}
+                activeFlareExists={activeFlareExists}
+                activeFlareJoint={activeFlare ? activeFlare.joint : undefined}
               />
             )}
 
