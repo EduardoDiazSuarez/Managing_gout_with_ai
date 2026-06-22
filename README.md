@@ -1,12 +1,6 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Managing_gout_with_ai
 
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/347a0d1c-f38c-4dcf-9401-62d4c941ee13
+Managing_gout_with_ai provides culinary best practices, dietary guidance, and tools to help chefs, dietitians, and patients adapt recipes and meal plans for managing hyperuricemia and gout. The repository contains chef-facing skills, educational modules, and a small development web app. Content is informational and not a substitute for professional medical advice.
 
 ## Run Locally
 
