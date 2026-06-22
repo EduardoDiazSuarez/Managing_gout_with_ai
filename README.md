@@ -1,2 +1,10 @@
-# Managing_gout_with_ai
-This project is meant to help people with gout live a normal life
+## Run Locally
+
+**Prerequisites:**  Node.js
+
+
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
