@@ -1,7 +1,7 @@
-# High Cuisine — Cooking Best Practices (Skill)
+# Cooking Best Practices (Skill)
 
 Description:
-This skill provides concise, chef-focused cooking best practices to reduce purine concentration and avoid unnecessary acidification in high-cuisine preparations. Intended for chefs, recipe developers, and kitchen managers adapting gourmet dishes for patients managing hyperuricemia or gout.
+This skill provides concise, cooking best practices to reduce purine concentration and avoid unnecessary acidification in high-cuisine preparations. 
 
 Key Cooking Best Practices
 
