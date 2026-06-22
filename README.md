@@ -9,6 +9,14 @@ Managing_gout_with_ai provides culinary best practices, dietary guidance, and to
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Copy `.env.example` to `.env.local` and fill in secrets (do NOT commit `.env.local`):
+   - GEMINI_API_KEY (required)
+   - APP_API_KEY (required in production)
+   - ALLOWED_ORIGIN (production CORS origin)
+   - NODE_ENV (development or production)
+   - PORT (optional)
+
+   To set secrets for GitHub Actions / production, add them under the repository Settings -> Secrets.
+
+3. Run the app locally:
    `npm run dev`
