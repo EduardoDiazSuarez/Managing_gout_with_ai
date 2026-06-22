@@ -249,11 +249,20 @@ export default function FoodScanner({ naturalFoods = [], onAddNaturalFood }: Foo
   const [detectedCustomCode, setDetectedCustomCode] = useState<string | null>(null);
   const [customFoodInput, setCustomFoodInput] = useState('');
 
-  // Filter static database
-  const filteredFoods = STATIC_FOODS_DATABASE.filter((food) =>
-    food.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    food.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter static database and deduplicate by normalized name
+  const filteredFoods = (() => {
+    const results = STATIC_FOODS_DATABASE.filter((food) =>
+      food.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      food.category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    const seen = new Set<string>();
+    return results.filter((f) => {
+      const key = f.name.trim().toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  })();
 
   const handleAiScan = async (e: FormEvent) => {
     e.preventDefault();
